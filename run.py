@@ -20,6 +20,7 @@ def grab_last_price(trader, ls, header):
 def sleep_till_end(trader):
     while True:
         t = trader.get_last_trade_time()
+        t = t.time()
         if t < dt.time(14, 0, 0):
             dt.sleep(60*61)
         elif t < dt.time(15, 00, 0):
@@ -42,15 +43,19 @@ def sleep_till_end(trader):
 if __name__=='__main__':
     import os
     print(os.getcwd())
-    trader = shift.Trader('democlient')
+    trader = shift.Trader('test001')
+    trader.disconnect()
     trader.connect('initiator.cfg', 'password')
     trader.sub_all_order_book()
-
-    dat = pd.read_csv("sample_last_price.csv")
-    sym_ls = list(dat['Symbol'])
-    field_ls = list(dat.columns)
-    if sleep_till_end(trader):
-        df = grab_last_price(trader, sym_ls, field_ls)
-    df.to_csv('last_price.csv')
+    try:
+        dat = pd.read_csv("sample_last_price.csv")
+        sym_ls = list(dat['Symbol'])
+        field_ls = list(dat.columns)
+        if sleep_till_end(trader):
+            df = grab_last_price(trader, sym_ls, field_ls)
+        df.to_csv('last_price.csv')
+    except:
+        trader.disconnect()
+        print('crashed.')
 
     
