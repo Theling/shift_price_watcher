@@ -5,8 +5,17 @@ import pandas as pd
 
 
 
-def grab_last_pricee(trader, ls):
-    pass
+def grab_last_price(trader, ls, header):
+    lp, ap, bp, aq, bq = [], [], [], [], []
+    for sym in ls:
+        lp.append(trader.get_last_price(sym))
+        best_price = trader.get_best_price(sym)
+        ap.append(best_price.get_ask_price())
+        bp.append(best_price.get_bid_price())
+        aq.append(best_price.get_ask_size())
+        bq.append(best_price.get_bid_size())
+    res = [ls, lp, ap, bp, aq, bq]
+    return pd.DataFrame(dict(zip(header, res)))
 
 def sleep_till_end(trader):
     while True:
@@ -31,11 +40,17 @@ def sleep_till_end(trader):
 
 
 if __name__=='__main__':
-    trader = shift.Trader('test001')
+    import os
+    print(os.getcwd())
+    trader = shift.Trader('democlient')
     trader.connect('initiator.cfg', 'password')
     trader.sub_all_order_book()
 
-    sym_ls = ['']
-    pd.read_csv('sample_last_price.csv')
+    dat = pd.read_csv("sample_last_price.csv")
+    sym_ls = list(dat['Symbol'])
+    field_ls = list(dat.columns)
+    if sleep_till_end(trader):
+        df = grab_last_price(trader, sym_ls, field_ls)
+    df.to_csv('last_price.csv')
 
     
